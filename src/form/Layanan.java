@@ -15,6 +15,8 @@ public class Layanan extends javax.swing.JPanel {
      */
     public Layanan() {
         initComponents();
+       
+        
     }
 
     /**
