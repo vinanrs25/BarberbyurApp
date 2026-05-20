@@ -8,6 +8,10 @@ import component.ThemeColor;
 import java.awt.Color;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  *
@@ -191,35 +195,39 @@ public class Pelanggan extends javax.swing.JPanel {
     
      private void loadTable() {
 
-        DefaultTableModel model =
-                (DefaultTableModel) tablePelanggan.getModel();
+    DefaultTableModel model =
+            (DefaultTableModel) tablePelanggan.getModel();
 
-        model.addRow(new Object[]{
-        "Usep",
-        "08123456789",
-        "15",
-        "Gold",
-        "10 Mei 2026",
-        ""
-        });
+    // bersihkan tabel dulu
+    model.setRowCount(0);
 
-        model.addRow(new Object[]{
-        "Rizky",
-        "0812121212",
-        "5",
-        "Silver",
-        "10 Mei 2026",
-        ""
-        });
-         
-        model.addRow(new Object[]{
-        "Ridho",
-        "0819998812",
-        "20",
-        "Bronze",
-        "10 Mei 2026",
-        ""
-        });        
+    try {
+        Connection conn = Koneksi.getKoneksi();
+        Statement st = conn.createStatement();
+
+        String sql = "SELECT nama, no_hp, total_kunjungan, tier, tanggal_kunjungan_terakhir FROM pelanggan";
+        ResultSet rs = st.executeQuery(sql);
+
+        while (rs.next()) {
+            model.addRow(new Object[]{
+                rs.getString("nama"),
+                rs.getString("no_hp"),
+                rs.getInt("total_kunjungan"),
+                rs.getString("tier"),
+                rs.getDate("tanggal_kunjungan_terakhir"),
+                ""
+            });
+        }
+
+        rs.close();
+        st.close();
+
+    } catch (SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+            this,
+            "Gagal load data: " + e.getMessage()
+        );
+    }      
     }
 
     /**

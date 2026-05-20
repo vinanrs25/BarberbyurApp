@@ -4,6 +4,14 @@
  */
 package form;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JTable;
+
 /**
  *
  * @author rhmnsae
@@ -13,8 +21,94 @@ public class Kapster extends javax.swing.JPanel {
     /**
      * Creates new form Kapster
      */
+    
+    DefaultTableModel model;
+    Connection conn;
+    
+    private JTable tableKapster;
+
     public Kapster() {
         initComponents();
+        // Hubungkan JTable ke jTable1
+        tableKapster = jTable1;
+
+        // isi variable global conn
+        conn = Koneksi.getKoneksi();
+
+        if (conn == null) {
+            JOptionPane.showMessageDialog(null, "Koneksi database gagal!");
+            return;
+        }
+//        kon = new koneksi();
+    btnTambah.addActionListener(this::btnTambahActionPerformed);
+    btnEdit.addActionListener(this::btnEditActionPerformed);
+    btnHapus.addActionListener(this::btnHapusActionPerformed);
+
+    tampilData();
+
+    // klik row tabel
+    tableKapster.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+
+            int row = tableKapster.getSelectedRow();
+
+            namaKaps.setText(tableKapster.getValueAt(row, 1).toString());
+            noHP.setText(tableKapster.getValueAt(row, 2).toString());
+            spesialisasi.setText(tableKapster.getValueAt(row, 3).toString());
+            Komisi.setText(tableKapster.getValueAt(row, 4).toString());
+            status.setSelectedItem(tableKapster.getValueAt(row, 5).toString());
+        }
+    });
+    
+    }
+    
+    private void tampilData() {
+
+        model = new DefaultTableModel();
+
+        model.addColumn("ID");
+        model.addColumn("Nama");
+        model.addColumn("No HP");
+        model.addColumn("Spesialisasi");
+        model.addColumn("Komisi");
+        model.addColumn("Status");
+
+        try {
+
+            String sql = "SELECT * FROM kapster";
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                model.addRow(new Object[]{
+                    rs.getString("id"),
+                    rs.getString("nama"),
+                    rs.getString("telepon"),
+                    rs.getString("spesialisasi"),
+                    rs.getString("komisi"),
+                    rs.getString("status")
+                });
+            }
+
+            tableKapster.setModel(model);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,
+                    e.getMessage());
+        }
+    }
+
+    // CLEAR FORM
+    private void clearForm() {
+
+        namaKaps.setText("");
+        noHP.setText("");
+        spesialisasi.setText("");
+        Komisi.setText("");
+        status.setSelectedIndex(0);
     }
 
     /**
@@ -26,35 +120,251 @@ public class Kapster extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnTambah = new javax.swing.JButton();
+        btnEdit = new javax.swing.JButton();
+        btnHapus = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        Komisi = new javax.swing.JTextField();
+        namaKaps = new javax.swing.JTextField();
+        noHP = new javax.swing.JTextField();
+        spesialisasi = new javax.swing.JTextField();
+        status = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
 
         setBackground(new java.awt.Color(10, 10, 11));
 
-        jLabel1.setFont(new java.awt.Font("SansSerif", 0, 24)); // NOI18N
+        btnTambah.setText("Tambah");
+
+        btnEdit.setText("Edit");
+
+        btnHapus.setText("Hapus");
+
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Kapster");
+        jLabel1.setText("Data Kapster");
+
+        spesialisasi.addActionListener(this::spesialisasiActionPerformed);
+
+        status.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Aktif", "Tidak Aktif" }));
+
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setText("Nama");
+
+        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel3.setText("No.hp");
+
+        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel4.setText("Spesialisasi");
+
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel5.setText("Komisi");
+
+        jLabel6.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel6.setText("Status");
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(jTable1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnTambah)
+                                .addGap(87, 87, 87)
+                                .addComponent(btnEdit)
+                                .addGap(75, 75, 75)
+                                .addComponent(btnHapus))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(42, 42, 42)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(noHP)
+                            .addComponent(Komisi)
+                            .addComponent(namaKaps)
+                            .addComponent(spesialisasi)
+                            .addComponent(status, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(67, 67, 67))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(123, 123, 123)
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(147, 147, 147))
+                .addGap(20, 20, 20)
+                .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(namaKaps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2))
+                        .addGap(14, 14, 14)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(noHP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(spesialisasi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addGap(14, 14, 14)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(Komisi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(status, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6))))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnTambah)
+                    .addComponent(btnEdit)
+                    .addComponent(btnHapus))
+                .addContainerGap(35, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void spesialisasiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spesialisasiActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_spesialisasiActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField Komisi;
+    private javax.swing.JButton btnEdit;
+    private javax.swing.JButton btnHapus;
+    private javax.swing.JButton btnTambah;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextField namaKaps;
+    private javax.swing.JTextField noHP;
+    private javax.swing.JTextField spesialisasi;
+    private javax.swing.JComboBox<String> status;
     // End of variables declaration//GEN-END:variables
+
+// TAMBAH
+    private void btnTambahActionPerformed(java.awt.event.ActionEvent evt) {
+
+        try {
+
+            String sql = "INSERT INTO kapster VALUES (NULL,?,?,?,?,?)";
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, namaKaps.getText());
+            ps.setString(2, noHP.getText());
+            ps.setString(3, spesialisasi.getText());
+            ps.setString(4, Komisi.getText());
+            ps.setString(5, status.getSelectedItem().toString());
+
+            ps.executeUpdate();
+
+            JOptionPane.showMessageDialog(null,
+                    "Data Berhasil Ditambahkan");
+
+            tampilData();
+            clearForm();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,
+                    e.getMessage());
+        }
+    }
+
+    // EDIT
+    private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {
+
+        int row = tableKapster.getSelectedRow();
+
+        String id = tableKapster.getValueAt(row, 0).toString();
+
+        try {
+
+            String sql = "UPDATE kapster SET nama=?, telepon=?, spesialisasi=?, komisi=?, status=? WHERE id=?";
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, namaKaps.getText());
+            ps.setString(2, noHP.getText());
+            ps.setString(3, spesialisasi.getText());
+            ps.setString(4, Komisi.getText());
+            ps.setString(5, status.getSelectedItem().toString());
+            ps.setString(6, id);
+
+            ps.executeUpdate();
+
+            JOptionPane.showMessageDialog(null,
+                    "Data Berhasil Diubah");
+
+            tampilData();
+            clearForm();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,
+                    e.getMessage());
+        }
+    }
+
+    // HAPUS
+    private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {
+
+        int row = tableKapster.getSelectedRow();
+
+        String id = tableKapster.getValueAt(row, 0).toString();
+
+        try {
+
+            String sql = "DELETE FROM kapster WHERE id_kapster=?";
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, id);
+
+            ps.executeUpdate();
+
+            JOptionPane.showMessageDialog(null,
+                    "Data Berhasil Dihapus");
+
+            tampilData();
+            clearForm();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,
+                    e.getMessage());
+        }
+    }
 }
