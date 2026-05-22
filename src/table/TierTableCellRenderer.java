@@ -42,26 +42,25 @@ public Component getTableCellRendererComponent(
 
     // bungkus badge dalam JPanel agar bisa diatur posisinya
     JPanel panel = new JPanel(new GridBagLayout());
-panel.setOpaque(true);
+    panel.setOpaque(true);
 
-int hoveredRow = -1;
-if (table instanceof component.ModernTable) {
-    hoveredRow = ((component.ModernTable) table).getHoveredRow();
-}
+    int hoveredRow = -1;
+    if (table instanceof component.ModernTable) {
+        hoveredRow = ((component.ModernTable) table).getHoveredRow();
+    }
 
-panel.setBackground(
-    row == hoveredRow ? ThemeColor.GOLD : ThemeColor.SURFACE
-);
+    panel.setBackground(
+        row == hoveredRow ? ThemeColor.GOLD : ThemeColor.SURFACE
+    );
 
-panel.setBorder(BorderFactory.createMatteBorder(
-    0, 0, 1, 0, ThemeColor.BORDER
-));
+    panel.setBorder(BorderFactory.createMatteBorder(
+        0, 0, 1, 0, ThemeColor.BORDER
+    ));
 
-GridBagConstraints gbc = new GridBagConstraints();
-panel.add(badge, gbc);
+    GridBagConstraints gbc = new GridBagConstraints();
+    panel.add(badge, gbc);
 
-return panel;
-}
-    
+    return panel;
+    }  
     
 }

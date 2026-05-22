@@ -5,6 +5,7 @@
 package form;
 
 import component.ThemeColor;
+import dialog.TambahPelangganDialog;
 import java.awt.Color;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -24,16 +25,33 @@ public class Pelanggan extends javax.swing.JPanel {
      */
     public Pelanggan() {
         initComponents();
+        
+        //active search 
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                refreshTable();
+            }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                refreshTable();
+            }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                refreshTable();
+            }
+        });
+        
         //block edit double click
         tablePelanggan.setModel(new javax.swing.table.DefaultTableModel(
         new Object[][] {},
         new String[] {
-            "Pelanggan", "No. HP", "Total Kunjungan", "Tier", "Kunjungan Terakhir", "Aksi"
+            "Pelanggan", "No. HP", "Total Kunjungan", "Poin", "Tier", "Kunjungan Terakhir", "Aksi"
         }
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 5;
+                return column == 6;
             }
         });
         //custom search bar
@@ -117,8 +135,8 @@ public class Pelanggan extends javax.swing.JPanel {
         //menghilangkan border default dari scroll pane
         scrollTable.setBorder(null);
         
-        //load data dummy
-        loadTable();
+        //load data
+        refreshTable();
         
         //off switch kolom
         tablePelanggan.getTableHeader().setReorderingAllowed(false);
@@ -127,7 +145,7 @@ public class Pelanggan extends javax.swing.JPanel {
         tablePelanggan.getTableHeader().setResizingAllowed(false);
         tablePelanggan.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
-        int[] widths = {260, 150, 150, 120, 160, 287};
+        int[] widths = {200, 150, 150, 60, 120, 160, 287};
 
         for (int i = 0; i < widths.length; i++) {
             tablePelanggan.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
@@ -137,19 +155,19 @@ public class Pelanggan extends javax.swing.JPanel {
         
         //tier dan aksi
         tablePelanggan.getColumnModel()
-        .getColumn(3)
+        .getColumn(4)
         .setCellRenderer(
                 new table.TierTableCellRenderer()
         );
 
         tablePelanggan.getColumnModel()
-        .getColumn(5)
+        .getColumn(6)
         .setCellRenderer(
                 new table.ActionCellRenderer()
         );
 
         tablePelanggan.getColumnModel()
-        .getColumn(5)
+        .getColumn(6)
         .setCellEditor(
                 new table.ActionCellEditor()
         );
@@ -193,43 +211,75 @@ public class Pelanggan extends javax.swing.JPanel {
 
     }  
     
-     private void loadTable() {
-
-    DefaultTableModel model =
-            (DefaultTableModel) tablePelanggan.getModel();
-
-    // bersihkan tabel dulu
+    private void loadTable(String keyword, String tier) {
+    DefaultTableModel model = (DefaultTableModel) tablePelanggan.getModel();
     model.setRowCount(0);
 
     try {
         Connection conn = Koneksi.getKoneksi();
-        Statement st = conn.createStatement();
+        
+        StringBuilder sql = new StringBuilder(
+            "SELECT nama, no_hp, total_kunjungan, point, tier, tanggal_kunjungan_terakhir FROM pelanggan WHERE 1=1"
+        );
 
-        String sql = "SELECT nama, no_hp, total_kunjungan, tier, tanggal_kunjungan_terakhir FROM pelanggan";
-        ResultSet rs = st.executeQuery(sql);
+        // filter keyword
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (nama LIKE ? OR no_hp LIKE ?)");
+        }
+
+        // filter tier
+        if (tier != null && !tier.equals("Semua Tier")) {
+            sql.append(" AND tier = ?");
+        }
+
+        java.sql.PreparedStatement ps = conn.prepareStatement(sql.toString());
+
+        int paramIndex = 1;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+            ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+        }
+
+        if (tier != null && !tier.equals("Semua Tier")) {
+            ps.setString(paramIndex++, tier);
+        }
+
+        ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {
+            java.sql.Date tglKunjungan = rs.getDate("tanggal_kunjungan_terakhir");
+            String kunjunganTerakhir = (tglKunjungan != null) ? tglKunjungan.toString() : "-";
+
             model.addRow(new Object[]{
                 rs.getString("nama"),
                 rs.getString("no_hp"),
                 rs.getInt("total_kunjungan"),
+                rs.getInt("point"),
                 rs.getString("tier"),
-                rs.getDate("tanggal_kunjungan_terakhir"),
+                kunjunganTerakhir,
                 ""
             });
         }
 
         rs.close();
-        st.close();
+        ps.close();
 
-    } catch (SQLException e) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this,
-            "Gagal load data: " + e.getMessage()
-        );
-    }      
+        } catch (SQLException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Gagal load data: " + e.getMessage()
+            );
+        }
     }
-
+    
+    public void refreshTable() {
+        String keyword = txtSearch.getText().trim();
+        String tier = (String) cbTier.getSelectedItem();
+        loadTable(keyword, tier);
+    }
+    
+     
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -257,13 +307,19 @@ public class Pelanggan extends javax.swing.JPanel {
         cbTier.addActionListener(this::cbTierActionPerformed);
 
         btnTambah.setText("+ Tambah Pelanggan");
+        btnTambah.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnTambahMouseClicked(evt);
+            }
+        });
+        btnTambah.addActionListener(this::btnTambahActionPerformed);
 
         tablePelanggan.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Pelanggan", "No. HP", "Total Kunjungan", "Tier", "Kunjungan Terakhir", "Aksi"
+                "Pelanggan", "No. HP", "Total Kunjungan", "Poin", "Tier", "Kunjungan Terakhir", "Aksi"
             }
         ));
         scrollTable.setViewportView(tablePelanggan);
@@ -310,13 +366,32 @@ public class Pelanggan extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
-        // TODO add your handling code here:
+        refreshTable();
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void cbTierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbTierActionPerformed
-        // TODO add your handling code here:
+        refreshTable();
 
     }//GEN-LAST:event_cbTierActionPerformed
+
+    private void btnTambahMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnTambahMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnTambahMouseClicked
+
+    private void btnTambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambahActionPerformed
+        // TODO add your handling code here:
+        TambahPelangganDialog dialog =
+        new TambahPelangganDialog(
+                null,
+                true
+        );
+        
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+        
+        // setelah dialog ditutup, refresh tabel otomatis
+        refreshTable();
+    }//GEN-LAST:event_btnTambahActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

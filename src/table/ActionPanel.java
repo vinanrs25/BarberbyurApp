@@ -76,4 +76,16 @@ public class ActionPanel extends JPanel {
 
         return btn;
     }
+    
+    public JButton getBtnDelete() {
+        return btnDelete;
+    }
+
+    public JButton getBtnEdit() {
+        return btnEdit;
+    }
+
+    public JButton getBtnDetail() {
+        return btnDetail;
+    }
 }
