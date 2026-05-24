@@ -73,6 +73,16 @@ public class ModernButton extends JButton {
         setForeground(ThemeColor.TEXT);
         repaint();
     }   
+ 
+    // set variant outline (background surface+ border)   
+    public void setSurfaceVariant() {
+        this.baseColor = ThemeColor.SURFACE;
+        this.normalColor = ThemeColor.SURFACE;
+        this.hoverColor = ThemeColor.SURFACE_2;
+        this.borderColor = ThemeColor.BORDER;
+        setForeground(ThemeColor.TEXT);
+        repaint();
+    }
 
     // set warna custom
     public void setVariant(Color normal, Color hover, Color fg, Color border) {
