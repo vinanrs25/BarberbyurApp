@@ -176,4 +176,10 @@ public class Main extends javax.swing.JFrame {
     private component.Menu menu;
     private swing.PanelBorder panelBorder1;
     // End of variables declaration//GEN-END:variables
+
+    public void navigateTo(form.Riwayat_Transaksi riwayat_Transaksi) {
+        setForm(form6); // gunakan form6 yang sudah diinisialisasi
+        menu.getListMenu().setSelectedMenu(5); // sync highlight menu index 5
+        header1.setMenuName("Riwayat Transaksi"); // sesuaikan nama header
+    }
 }
