@@ -16,7 +16,7 @@ import java.sql.SQLException;
 
 /**
  *
- * @author rhmnsae
+ * @author marwa
  */
 public class Pelanggan extends javax.swing.JPanel {
 
