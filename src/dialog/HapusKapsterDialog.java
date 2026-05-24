@@ -5,28 +5,25 @@
 package dialog;
 
 import component.ThemeColor;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import form.Koneksi;
+
 /**
  *
- * @author marwa
+ * @author rhmnsae
  */
-public class HapusPelangganDialog extends javax.swing.JDialog {
+public class HapusKapsterDialog extends javax.swing.JDialog {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HapusPelangganDialog.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HapusKapsterDialog.class.getName());
 
     /**
      * Creates new form TambahPelangganDialog
      */
-    private int idPelanggan;
-
-    public HapusPelangganDialog(java.awt.Frame parent, boolean modal, int idPelanggan) {
+    private int idKapster;
+    
+    
+    public HapusKapsterDialog(java.awt.Frame parent, boolean modal, int idKapster) {
         super(parent, modal);
-        this.idPelanggan = idPelanggan;
+        this.idKapster = idKapster;
+        
         initComponents();
         mainPanel.setRadius(20);
         mainPanel.setBackground(ThemeColor.BACKGROUND);
@@ -52,14 +49,14 @@ public class HapusPelangganDialog extends javax.swing.JDialog {
         btnBatal = new component.ModernButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Hapus Pelanggan");
+        setTitle("Hapus Kapster");
         setResizable(false);
 
         labelJudul.setFont(new java.awt.Font("SansSerif", 1, 28)); // NOI18N
-        labelJudul.setText("Hapus Pelanggan");
+        labelJudul.setText("Hapus Kapster");
 
         labelDeskripsi.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
-        labelDeskripsi.setText("Data pelanggan yang dihapus tidak dapat dikembalikan kembali.");
+        labelDeskripsi.setText("Data Kapster yang dihapus tidak dapat dikembalikan kembali.");
 
         btnHapus.setText("Hapus");
         btnHapus.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -81,34 +78,34 @@ public class HapusPelangganDialog extends javax.swing.JDialog {
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(117, 117, 117)
-                        .addComponent(labelJudul))
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addComponent(labelDeskripsi)))
-                .addContainerGap(32, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnBatal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
                 .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(146, 146, 146))
+                .addGap(162, 162, 162))
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(143, 143, 143)
+                        .addComponent(labelJudul))
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(38, 38, 38)
+                        .addComponent(labelDeskripsi)))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGap(38, 38, 38)
+                .addGap(39, 39, 39)
                 .addComponent(labelJudul)
-                .addGap(31, 31, 31)
+                .addGap(38, 38, 38)
                 .addComponent(labelDeskripsi)
-                .addGap(30, 30, 30)
+                .addGap(28, 28, 28)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnBatal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -131,30 +128,30 @@ public class HapusPelangganDialog extends javax.swing.JDialog {
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
         try {
-        java.sql.Connection conn = form.Koneksi.getKoneksi();
-        java.sql.PreparedStatement ps = conn.prepareStatement(
-            "DELETE FROM pelanggan WHERE id = ?"
-        );
-        ps.setInt(1, idPelanggan);
-        ps.executeUpdate();
+            java.sql.Connection conn = form.Koneksi.getKoneksi();
+            java.sql.PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM kapster WHERE id = ?" 
+            );
+            ps.setInt(1, idKapster);
+            ps.executeUpdate();
 
-        javax.swing.JOptionPane.showMessageDialog(
-            this,
-            "Pelanggan berhasil dihapus!",
-            "Sukses",
-            javax.swing.JOptionPane.INFORMATION_MESSAGE
-        );
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Kapster berhasil dihapus!", 
+                    "Sukses",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+            );
 
-        dispose();
+            dispose();
 
-    } catch (java.sql.SQLException e) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this,
-            "Gagal menghapus: " + e.getMessage(),
-            "Error",
-            javax.swing.JOptionPane.ERROR_MESSAGE
-        );
-    }
+        } catch (java.sql.SQLException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Gagal menghapus: " + e.getMessage(),
+                    "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
     }//GEN-LAST:event_btnHapusActionPerformed
 
     private void btnBatalMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnBatalMouseClicked

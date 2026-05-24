@@ -47,7 +47,7 @@ public class HapusItemDialog extends javax.swing.JDialog {
         btnBatal = new component.ModernButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Hapus Pelanggan");
+        setTitle("Hapus Item");
         setResizable(false);
 
         labelJudul.setFont(new java.awt.Font("SansSerif", 1, 28)); // NOI18N

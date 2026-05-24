@@ -44,7 +44,7 @@ public class Layanan extends javax.swing.JPanel {
         }
         );
 
-        // Sembunyikan kolom ID
+        // sembunyikan kolom ID
         tableLayanan.getColumnModel().getColumn(0).setMinWidth(0);
         tableLayanan.getColumnModel().getColumn(0).setMaxWidth(0);
         tableLayanan.getColumnModel().getColumn(0).setWidth(0);
@@ -58,6 +58,21 @@ public class Layanan extends javax.swing.JPanel {
 
         // search
         txtSearch.setHint("Cari item...");
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                loadData();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                loadData();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            }
+        });
 
         // header
         tableLayanan.getTableHeader().setOpaque(false);
@@ -125,9 +140,30 @@ public class Layanan extends javax.swing.JPanel {
         DefaultTableModel model = (DefaultTableModel) tableLayanan.getModel();
         model.setRowCount(0);
 
+        String keyword = txtSearch.getText().trim();
+        String selectedTipe = cbTier.getSelectedItem().toString();
+
+        String tipeFilter = "";
+        if (selectedTipe.equals("Layanan (Jasa)")) {
+            tipeFilter = "service";
+        } else if (selectedTipe.equals("Produk (Barang)")) {
+            tipeFilter = "product";
+        }
+
         try {
             Connection conn = Koneksi.getKoneksi();
-            PreparedStatement ps = conn.prepareStatement("SELECT * FROM item");
+
+            String sql = "SELECT * FROM item WHERE nama LIKE ?";
+            if (!tipeFilter.isEmpty()) {
+                sql += " AND tipe = ?";
+            }
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, "%" + keyword + "%");
+            if (!tipeFilter.isEmpty()) {
+                ps.setString(2, tipeFilter);
+            }
+
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -140,29 +176,19 @@ public class Layanan extends javax.swing.JPanel {
 
                 if (tipe.equals("service")) {
                     tipe = "Layanan";
-                    stokDurasi = rs.getString("durasi");
+                    stokDurasi = rs.getString("durasi") + " menit";
                 } else {
                     tipe = "Produk";
-                    int stokInt = rs.getInt("stok"); 
-                    stokDurasi = stokInt + " pcs";  
+                    stokDurasi = rs.getInt("stok") + " pcs";
                 }
 
                 String status = rs.getString("status");
-
                 String namaHtml = "<html><div style='text-align:center;'>"
                         + "<b>" + nama + "</b><br>"
                         + "<span style='color:gray;'>" + deskripsi + "</span>"
                         + "</div></html>";
 
-                model.addRow(new Object[]{
-                    id, // kolom 0 — ID tersembunyi
-                    namaHtml, // kolom 1 — Nama Item
-                    tipe, // kolom 2
-                    harga, // kolom 3
-                    stokDurasi,// kolom 4
-                    status, // kolom 5
-                    "" // kolom 6 — Aksi
-                });
+                model.addRow(new Object[]{id, namaHtml, tipe, harga, stokDurasi, status, ""});
             }
 
         } catch (Exception e) {
@@ -221,6 +247,7 @@ public class Layanan extends javax.swing.JPanel {
         txtSearch.setPreferredSize(new java.awt.Dimension(250, 40));
         txtSearch.addActionListener(this::txtSearchActionPerformed);
 
+        cbTier.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
         cbTier.setForeground(new java.awt.Color(255, 255, 255));
         cbTier.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Semua Tipe", "Layanan (Jasa)", "Produk (Barang)" }));
         cbTier.setPreferredSize(new java.awt.Dimension(140, 40));
@@ -245,7 +272,7 @@ public class Layanan extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(28, 28, 28)
+                .addGap(40, 40, 40)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cbTier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -257,10 +284,12 @@ public class Layanan extends javax.swing.JPanel {
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
         // TODO add your handling code here:
+        loadData();
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void cbTierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbTierActionPerformed
         // TODO add your handling code here:
+        loadData();
     }//GEN-LAST:event_cbTierActionPerformed
 
     private void btnTambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambahActionPerformed

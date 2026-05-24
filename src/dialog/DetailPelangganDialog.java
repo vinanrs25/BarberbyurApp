@@ -55,7 +55,9 @@ public class DetailPelangganDialog extends javax.swing.JDialog {
                 String nama = rs.getString("nama");
                 String noHp = rs.getString("no_hp");
                 String tier = rs.getString("tier");
-
+                if (tier == null)
+                    tier = "Bronze";
+                
                 namaPelanggan.setText(nama);
                 namaPelanggan.setForeground(ThemeColor.TEXT);
 

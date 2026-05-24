@@ -24,7 +24,11 @@ public class Pelanggan extends javax.swing.JPanel {
      * Creates new form Pelanggan
      */
     public Pelanggan() {
-        initComponents();
+        initComponents();setBorder(
+                javax.swing.BorderFactory.createEmptyBorder(0, 0, 40, 40)
+        );
+        
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 40, 40));
         
         //active search 
         txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
@@ -109,6 +113,13 @@ public class Pelanggan extends javax.swing.JPanel {
         //menghapus border tabel
         tablePelanggan.setShowGrid(false);
         
+        tablePelanggan.setRowHeight(56);
+        tablePelanggan.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        tablePelanggan.setSelectionBackground(ThemeColor.SURFACE);
+        tablePelanggan.setSelectionForeground(ThemeColor.TEXT);
+        tablePelanggan.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 13));
+        tablePelanggan.getTableHeader().setPreferredSize(new java.awt.Dimension(0, 40));
+        
         
         //custom dropdown
         cbTier.setFocusable(false);
@@ -143,15 +154,7 @@ public class Pelanggan extends javax.swing.JPanel {
         
         //fix width kolom
         tablePelanggan.getTableHeader().setResizingAllowed(false);
-        tablePelanggan.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        
-        int[] widths = {200, 150, 150, 60, 120, 160, 287};
-
-        for (int i = 0; i < widths.length; i++) {
-            tablePelanggan.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
-            tablePelanggan.getColumnModel().getColumn(i).setMinWidth(widths[i]);
-            tablePelanggan.getColumnModel().getColumn(i).setMaxWidth(widths[i]);
-        }
+        tablePelanggan.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         
         //tier dan aksi
         tablePelanggan.getColumnModel()
@@ -256,7 +259,7 @@ public class Pelanggan extends javax.swing.JPanel {
                 rs.getString("no_hp"),
                 rs.getInt("total_kunjungan"),
                 rs.getInt("point"),
-                rs.getString("tier"),
+                rs.getString("tier") != null ? rs.getString("tier") : "Bronze",
                 kunjunganTerakhir,
                 ""
             });
@@ -301,6 +304,7 @@ public class Pelanggan extends javax.swing.JPanel {
         txtSearch.setPreferredSize(new java.awt.Dimension(250, 40));
         txtSearch.addActionListener(this::txtSearchActionPerformed);
 
+        cbTier.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
         cbTier.setForeground(new java.awt.Color(255, 255, 255));
         cbTier.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Semua Tier", "Bronze", "Silver", "Gold" }));
         cbTier.setPreferredSize(new java.awt.Dimension(140, 40));
@@ -328,11 +332,11 @@ public class Pelanggan extends javax.swing.JPanel {
         tableContainer.setLayout(tableContainerLayout);
         tableContainerLayout.setHorizontalGroup(
             tableContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(scrollTable, javax.swing.GroupLayout.DEFAULT_SIZE, 1127, Short.MAX_VALUE)
+            .addComponent(scrollTable)
         );
         tableContainerLayout.setVerticalGroup(
             tableContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(scrollTable, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
+            .addComponent(scrollTable, javax.swing.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -342,14 +346,14 @@ public class Pelanggan extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(40, 40, 40)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tableContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(cbTier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(btnTambah, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(tableContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(303, Short.MAX_VALUE))
+                        .addComponent(btnTambah, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(99, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -360,8 +364,7 @@ public class Pelanggan extends javax.swing.JPanel {
                     .addComponent(cbTier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnTambah, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(tableContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addComponent(tableContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

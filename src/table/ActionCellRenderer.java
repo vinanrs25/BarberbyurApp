@@ -22,6 +22,15 @@ public class ActionCellRenderer implements TableCellRenderer {
         panel.setBorder(BorderFactory.createMatteBorder(
             0, 0, 1, 0, component.ThemeColor.BORDER
         ));
-        return panel;
+        
+        JPanel wrapper = new JPanel(new GridBagLayout());
+        wrapper.setOpaque(true);
+        wrapper.setBackground(component.ThemeColor.SURFACE);
+        wrapper.setBorder(BorderFactory.createMatteBorder(
+                0, 0, 1, 0, component.ThemeColor.BORDER
+        ));
+        panel.setBorder(null);
+        wrapper.add(panel);
+        return wrapper;
     }
 }
