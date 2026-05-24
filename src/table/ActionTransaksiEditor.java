@@ -22,21 +22,24 @@ public class ActionTransaksiEditor extends AbstractCellEditor implements TableCe
             JTable table, Object value, boolean isSelected, int row, int column
     ) {
         ActionTransaksiPanel panel = new ActionTransaksiPanel();
-        panel.setBorder(javax.swing.BorderFactory.createMatteBorder(
-            0, 0, 1, 0, component.ThemeColor.BORDER
-        ));
 
         panel.getBtnStruk().addActionListener(e -> {
             fireEditingStopped();
-            // nanti isi logic untuk menampilkan struk
             javax.swing.JOptionPane.showMessageDialog(
-                table,
-                "Struk transaksi baris ke-" + (row + 1),
-                "Struk",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
+                    table,
+                    "Struk transaksi baris ke-" + (row + 1),
+                    "Struk",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
             );
         });
 
-        return panel;
+        JPanel wrapper = new JPanel(new GridBagLayout());
+        wrapper.setOpaque(true);
+        wrapper.setBackground(component.ThemeColor.SURFACE);
+        wrapper.setBorder(javax.swing.BorderFactory.createMatteBorder(
+                0, 0, 1, 0, component.ThemeColor.BORDER
+        ));
+        wrapper.add(panel);
+        return wrapper;
     }
 }
