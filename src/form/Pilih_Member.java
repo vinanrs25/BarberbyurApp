@@ -55,7 +55,7 @@ public class Pilih_Member extends javax.swing.JFrame {
                     g2d.setColor(new java.awt.Color(136, 136, 152)); 
                     g2d.setFont(comp.getFont().deriveFont(java.awt.Font.ITALIC));
                     int y = (comp.getHeight() + comp.getFontMetrics(comp.getFont()).getAscent()) / 2 - 2;
-                    g2d.drawString("Cari nama atau telepon...", 10, y);
+                    g2d.drawString("Cari nama atau no hp...", 10, y);
                     g2d.dispose();
                 }
             }
@@ -82,10 +82,10 @@ public class Pilih_Member extends javax.swing.JFrame {
         try {
             java.sql.Connection conn = Koneksi.getKoneksi();
             
-            String sql = "SELECT p.id, p.nama, p.telepon, p.poin, "
+            String sql = "SELECT p.id, p.nama, p.no_hp, p.point AS poin, "
                        + "(SELECT COUNT(*) FROM transaksi t WHERE t.id_pelanggan = p.id) AS kunjungan "
                        + "FROM pelanggan p "
-                       + "WHERE p.nama LIKE ? OR p.telepon LIKE ?";
+                       + "WHERE p.nama LIKE ? OR p.no_hp LIKE ?";
                        
             java.sql.PreparedStatement pst = conn.prepareStatement(sql);
             pst.setString(1, "%" + keyword + "%");
@@ -100,7 +100,7 @@ public class Pilih_Member extends javax.swing.JFrame {
                 model.Pelanggan p = new model.Pelanggan(
                     rs.getInt("id"),
                     rs.getString("nama"),
-                    rs.getString("telepon"),
+                    rs.getString("no_hp"),
                     rs.getInt("kunjungan"),
                     rs.getInt("poin")
                 );
@@ -109,7 +109,7 @@ public class Pilih_Member extends javax.swing.JFrame {
 
                 swing.ListMember item = new swing.ListMember();
                 // Passing data ke GUI List Member
-                item.setData(p.nama, p.telepon, p.kunjungan, p.poin);
+                item.setData(p.nama, p.no_hp, p.kunjungan, p.poin);
 
                 // FIX LAYOUT SWING
                 item.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 60));

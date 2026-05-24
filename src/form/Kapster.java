@@ -188,15 +188,12 @@ public class Kapster extends javax.swing.JPanel {
                 String komisiKapsterFmt = "Rp " + String.format("%,d", komisiKapster).replace(',', '.');
 
                 model.addRow(new Object[]{
-                    id, // 0 — tersembunyi
-                    namaHtml, // 1 — Nama + No HP
-                    spesialisasi, // 2 — Spesialisasi
-                    komisi, // 3 — Komisi (%) → integer untuk KomisiCellRenderer
-                    totalTx + "x", // 4 — Total TX
-                    pendapatanFmt, // 5 — Pendapatan
-                    komisiKapsterFmt,// 6 — Komisi (Rp)
-                    status, // 7 — Status
-                    "" // 8 — Aksi
+                    rs.getString("id"),
+                    rs.getString("nama"),
+                    rs.getString("no_hp"),
+                    rs.getString("spesialisasi"),
+                    rs.getString("komisi_persen"),
+                    rs.getString("status")
                 });
             }
 
@@ -364,6 +361,7 @@ public class Kapster extends javax.swing.JPanel {
         );
 
         cardPoin3.setBackground(new java.awt.Color(22, 22, 26));
+            String sql = "UPDATE kapster SET nama=?, no_hp=?, spesialisasi=?, komisi_persen=?, status=? WHERE id=?";
 
         totalPoin1.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         totalPoin1.setForeground(new java.awt.Color(136, 136, 152));

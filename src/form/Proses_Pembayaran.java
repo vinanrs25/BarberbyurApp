@@ -564,12 +564,14 @@ public class Proses_Pembayaran extends javax.swing.JFrame {
             int idKapsterDB = 0;
             int persenKomisi = 0;
             if (!namaKapster.equals("Tanpa Kapster")) {
-                PreparedStatement psK = conn.prepareStatement("SELECT id, komisi FROM kapster WHERE nama = ?");
+                
+                PreparedStatement psK = conn.prepareStatement("SELECT id, komisi_persen FROM kapster WHERE nama = ?");
                 psK.setString(1, namaKapster);
                 ResultSet rsK = psK.executeQuery();
                 if (rsK.next()) {
                     idKapsterDB = rsK.getInt("id");
-                    persenKomisi = rsK.getInt("komisi");
+                    
+                    persenKomisi = rsK.getInt("komisi_persen");
                 }
             }
             
@@ -604,7 +606,7 @@ public class Proses_Pembayaran extends javax.swing.JFrame {
             String sqlDetail = "INSERT INTO detail_transaksi (id_transaksi, id_item, jumlah, harga_saat_ini) VALUES (?, ?, ?, ?)";
             PreparedStatement psDetail = conn.prepareStatement(sqlDetail);
             
-            PreparedStatement psUpdateStok = conn.prepareStatement("UPDATE item SET durasistok = durasistok - ? WHERE id = ? AND tipe = 'product'");
+            PreparedStatement psUpdateStok = conn.prepareStatement("UPDATE item SET stok = stok - ? WHERE id = ? AND tipe = 'product'");
 
             for (model.CartItemModel c : cartData) {
                 psDetail.setInt(1, idTransaksiBaru);
@@ -625,7 +627,7 @@ public class Proses_Pembayaran extends javax.swing.JFrame {
 
             // Update Poin Pelanggan (Jika Member)
             if (idMember != 0 && poinDidapat > 0) {
-                PreparedStatement psPoin = conn.prepareStatement("UPDATE pelanggan SET poin = poin + ? WHERE id = ?");
+                PreparedStatement psPoin = conn.prepareStatement("UPDATE pelanggan SET point = point + ? WHERE id = ?");
                 psPoin.setInt(1, poinDidapat);
                 psPoin.setInt(2, idMember);
                 psPoin.executeUpdate();
