@@ -23,6 +23,11 @@ public Component getTableCellRendererComponent(
         int row,
         int column
 ) {
+    
+    if (value == null || value.toString().isEmpty()) {
+        value = "Bronze";
+    }
+    
     String tier = value.toString();
     RoundedBadge badge;
     switch (tier) {

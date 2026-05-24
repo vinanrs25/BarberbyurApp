@@ -23,6 +23,11 @@ public class Riwayat_Transaksi extends javax.swing.JPanel {
      */
     public Riwayat_Transaksi() {
         initComponents();
+        
+        setBorder(
+                javax.swing.BorderFactory.createEmptyBorder(0, 0, 40, 40)
+        );
+        
         tableContainer.setBackground(ThemeColor.SURFACE);
         tableContainer.setRadius(20);
 
@@ -78,7 +83,13 @@ public class Riwayat_Transaksi extends javax.swing.JPanel {
         tableTransaksi.setShowGrid(false);
         tableTransaksi.getTableHeader().setReorderingAllowed(false);
         tableTransaksi.getTableHeader().setResizingAllowed(false);
-        tableTransaksi.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tableTransaksi.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        tableTransaksi.setRowHeight(56);
+        tableTransaksi.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        tableTransaksi.setSelectionBackground(ThemeColor.SURFACE);
+        tableTransaksi.setSelectionForeground(ThemeColor.TEXT);
+        tableTransaksi.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 13));
+        tableTransaksi.getTableHeader().setPreferredSize(new java.awt.Dimension(0, 40));
         tableTransaksi.setModel(new javax.swing.table.DefaultTableModel(
             new Object[][]{},
             new String[]{
@@ -90,15 +101,7 @@ public class Riwayat_Transaksi extends javax.swing.JPanel {
             public boolean isCellEditable(int row, int column) {
                 return column == 6;
             }
-        });
-        
-        int[] widths = {152, 178, 178, 178, 150, 150, 150};
-        for (int i = 0; i < widths.length; i++) {
-
-        tableTransaksi.getColumnModel()
-            .getColumn(i)
-            .setPreferredWidth(widths[i]);
-        }
+        });       
 
         tableTransaksi.getColumnModel()
             .getColumn(6)
@@ -243,7 +246,7 @@ public class Riwayat_Transaksi extends javax.swing.JPanel {
         tableContainer.setLayout(tableContainerLayout);
         tableContainerLayout.setHorizontalGroup(
             tableContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1136, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
             .addGroup(tableContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(scrollTransaksi, javax.swing.GroupLayout.DEFAULT_SIZE, 1136, Short.MAX_VALUE))
         );
@@ -261,25 +264,24 @@ public class Riwayat_Transaksi extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(49, 49, 49)
+                .addGap(40, 40, 40)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tableContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tableContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(27, 27, 27)
-                        .addComponent(totalTransaksi)))
-                .addContainerGap(21, Short.MAX_VALUE))
+                        .addComponent(totalTransaksi)
+                        .addGap(0, 652, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(25, 25, 25)
+                .addGap(40, 40, 40)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(totalTransaksi))
                 .addGap(18, 18, 18)
-                .addComponent(tableContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addComponent(tableContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
