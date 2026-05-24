@@ -4,7 +4,7 @@
  */
 package form;
 
-import model.Produk;
+import model.Item;
 import model.CartItemModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -141,8 +141,13 @@ public class Kasir extends javax.swing.JPanel {
             }
             
             // Mengambil Kapster Terpilih
-            String kapsterTerpilih = PilihKapster.getSelectedItem().toString();
-            if (kapsterTerpilih.equals("-- Pilih Kapster --")) kapsterTerpilih = "Tanpa Kapster";
+            String kapsterCombo = PilihKapster.getSelectedItem().toString();
+            String kapsterTerpilih = "Tanpa Kapster";
+            
+            if (!kapsterCombo.equals("-- Pilih Kapster --")) {
+                // Memecah "Nama Kapster (20%)" untuk mengambil "Nama Kapster" saja
+                kapsterTerpilih = kapsterCombo.split(" \\(")[0];
+            }
 
             // Mengambil Metode Pembayaran (Cek ButtonGroup payGroup)
             String metode = "Tunai";
@@ -193,7 +198,7 @@ public class Kasir extends javax.swing.JPanel {
             java.sql.Connection conn = Koneksi.getKoneksi();
             
             // Buat query dinamis
-            String sql = "SELECT * FROM item WHERE nama LIKE ?";
+            String sql = "SELECT * FROM item WHERE nama LIKE ? AND status = 'aktif'";
             
             // Jika filter bukan "Semua", tambahkan kondisi tipe
             if (!filterTipe.equals("Semua")) {
@@ -210,22 +215,20 @@ public class Kasir extends javax.swing.JPanel {
             java.sql.ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
-                // Kolom di database namanya 'tipe'
-                String tipeDB = rs.getString("tipe");
-                String deskripsiDB = rs.getString("deskripsi");
-                String durasiStokDB = rs.getString("durasistok");
-
-                model.Produk p = new model.Produk(
+                model.Item p = new model.Item(
                     rs.getInt("id"), 
                     rs.getString("nama"), 
                     rs.getInt("harga"),
-                    tipeDB,
-                    deskripsiDB,
-                    durasiStokDB
+                    rs.getString("tipe"),
+                    rs.getString("deskripsi"),
+                    rs.getInt("durasi"),
+                    rs.getInt("stok")
                 );
 
                 swing.CardItem card = new swing.CardItem();
-                card.setData(p.nama, p.harga, p.tipe, p.deskripsi, p.durasiStok); 
+                // Cek tipe: Jika service pakai angka durasi, jika product pakai angka stok
+                String angkaTampil = p.tipe.equalsIgnoreCase("service") ? String.valueOf(p.durasi) : String.valueOf(p.stok);
+                card.setData(p.nama, p.harga, p.tipe, p.deskripsi, angkaTampil); 
                 // card.setOpaque(false); 
 
                 card.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -247,7 +250,7 @@ public class Kasir extends javax.swing.JPanel {
     }
 
     // LOGIKA MENAMBAH ITEM KE KERANJANG
-    private void tambahKeKeranjang(Produk p) {
+    private void tambahKeKeranjang(Item p) {
         boolean sudahAda = false;
         for (CartItemModel cart : listKeranjang) {
             if (cart.produk.id == p.id) {
@@ -394,10 +397,10 @@ public class Kasir extends javax.swing.JPanel {
             java.sql.Statement st = conn.createStatement();
             
             // Mengambil nama kapster yang statusnya aktif berdasarkan database SQL kamu
-            java.sql.ResultSet rs = st.executeQuery("SELECT nama FROM kapster WHERE status = 'aktif'");
+            java.sql.ResultSet rs = st.executeQuery("SELECT nama, komisi_persen FROM kapster WHERE LOWER(status) = 'aktif'");
             
             while (rs.next()) {
-                PilihKapster.addItem(rs.getString("nama"));
+                PilihKapster.addItem(rs.getString("nama") + " (" + rs.getInt("komisi_persen") + "%)");
             }
         } catch (Exception e) {
             e.printStackTrace();

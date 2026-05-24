@@ -86,9 +86,9 @@ public class Kapster extends javax.swing.JPanel {
                 model.addRow(new Object[]{
                     rs.getString("id"),
                     rs.getString("nama"),
-                    rs.getString("telepon"),
+                    rs.getString("no_hp"),
                     rs.getString("spesialisasi"),
-                    rs.getString("komisi"),
+                    rs.getString("komisi_persen"),
                     rs.getString("status")
                 });
             }
@@ -314,7 +314,7 @@ public class Kapster extends javax.swing.JPanel {
 
         try {
 
-            String sql = "UPDATE kapster SET nama=?, telepon=?, spesialisasi=?, komisi=?, status=? WHERE id=?";
+            String sql = "UPDATE kapster SET nama=?, no_hp=?, spesialisasi=?, komisi_persen=?, status=? WHERE id=?";
 
             PreparedStatement ps = conn.prepareStatement(sql);
 
