@@ -4,13 +4,15 @@
  */
 package form;
 
+import component.ThemeColor;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import dialog.TambahKapsterDialog;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.JTable;
+import component.RoundedPanel;
 
 /**
  *
@@ -22,66 +24,168 @@ public class Kapster extends javax.swing.JPanel {
      * Creates new form Kapster
      */
     
-    DefaultTableModel model;
-    Connection conn;
-    
-    private JTable tableKapster;
-
     public Kapster() {
         initComponents();
-        // Hubungkan JTable ke jTable1
-        tableKapster = jTable1;
 
-        // isi variable global conn
-        conn = Koneksi.getKoneksi();
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 40, 40));
 
-        if (conn == null) {
-            JOptionPane.showMessageDialog(null, "Koneksi database gagal!");
-            return;
-        }
-//        kon = new koneksi();
-    btnTambah.addActionListener(this::btnTambahActionPerformed);
-    btnEdit.addActionListener(this::btnEditActionPerformed);
-    btnHapus.addActionListener(this::btnHapusActionPerformed);
+        // model
+        tableKapster.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{},
+                new String[]{"ID", "Nama", "Spesialisasi", "Komisi (%)", "Total TX", "Pendapatan", "Komisi Kapster", "Status", "Aksi"}
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 8; // hanya kolom Aksi
+            }
+        });
 
-    tampilData();
+        // Sembunyikan kolom ID
+        tableKapster.getColumnModel().getColumn(0).setMinWidth(0);
+        tableKapster.getColumnModel().getColumn(0).setMaxWidth(0);
+        tableKapster.getColumnModel().getColumn(0).setWidth(0);
 
-    // klik row tabel
-    tableKapster.addMouseListener(new java.awt.event.MouseAdapter() {
-        public void mouseClicked(java.awt.event.MouseEvent evt) {
+        // satu blok renderer — index sudah geser +1 karena ada kolom ID
+        tableKapster.getColumnModel().getColumn(3).setCellRenderer(new table.KomisiCellRenderer());
+        tableKapster.getColumnModel().getColumn(7).setCellRenderer(new table.StatusTableCellRenderer());
+        tableKapster.getColumnModel().getColumn(8).setCellRenderer(new table.ItemActionCellRenderer());
+        tableKapster.getColumnModel().getColumn(8).setCellEditor(new table.KapsterActionCellEditor());
+        
+        // lebar kolom
+        tableKapster.getColumnModel().getColumn(1).setPreferredWidth(180);
+        tableKapster.getColumnModel().getColumn(2).setPreferredWidth(160);
+        tableKapster.getColumnModel().getColumn(3).setPreferredWidth(160);
+        tableKapster.getColumnModel().getColumn(4).setPreferredWidth(80);
+        tableKapster.getColumnModel().getColumn(5).setPreferredWidth(120);
+        tableKapster.getColumnModel().getColumn(6).setPreferredWidth(120);
+        tableKapster.getColumnModel().getColumn(7).setPreferredWidth(80);
+        tableKapster.getColumnModel().getColumn(8).setPreferredWidth(100);
+        
+        // search
+        txtSearch.setHint("Cari kapster...");
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                loadData();
+            }
 
-            int row = tableKapster.getSelectedRow();
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                loadData();
+            }
 
-            namaKaps.setText(tableKapster.getValueAt(row, 1).toString());
-            noHP.setText(tableKapster.getValueAt(row, 2).toString());
-            spesialisasi.setText(tableKapster.getValueAt(row, 3).toString());
-            Komisi.setText(tableKapster.getValueAt(row, 4).toString());
-            status.setSelectedItem(tableKapster.getValueAt(row, 5).toString());
-        }
-    });
-    
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            }
+        });
+
+        // header
+        tableKapster.getTableHeader().setOpaque(false);
+        tableKapster.getTableHeader().setBackground(ThemeColor.SURFACE_2);
+        tableKapster.getTableHeader().setForeground(ThemeColor.TEXT_MUTED);
+        tableKapster.getTableHeader().setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 13));
+        tableKapster.getTableHeader().setBorder(null);
+        tableKapster.getTableHeader().setPreferredSize(new java.awt.Dimension(0, 40));
+        
+        // table
+        tableKapster.setBackground(ThemeColor.SURFACE);
+        tableKapster.setForeground(ThemeColor.TEXT);
+        tableKapster.setRowHeight(60);
+        tableKapster.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 13));
+        tableKapster.setSelectionBackground(ThemeColor.SURFACE);
+        tableKapster.setSelectionForeground(ThemeColor.TEXT);
+        tableKapster.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        tableKapster.setShowGrid(false);
+        tableKapster.getTableHeader().setReorderingAllowed(false);
+        tableKapster.getTableHeader().setResizingAllowed(false);
+        tableKapster.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        
+        // scroll
+        scrollTable.getVerticalScrollBar().setUI(new component.ModernScrollBarUI());
+        scrollTable.getVerticalScrollBar().setPreferredSize(new java.awt.Dimension(10, 0));
+        scrollTable.getViewport().setBackground(ThemeColor.SURFACE);
+        scrollTable.setBackground(ThemeColor.SURFACE);
+        scrollTable.setBorder(null);
+
+        scrollTable.setCorner(javax.swing.JScrollPane.LOWER_RIGHT_CORNER, new javax.swing.JPanel() {
+            {
+                setBackground(ThemeColor.SURFACE);
+            }
+        });
+        scrollTable.setCorner(javax.swing.JScrollPane.LOWER_LEFT_CORNER, new javax.swing.JPanel() {
+            {
+                setBackground(ThemeColor.SURFACE);
+            }
+        });
+        scrollTable.setCorner(javax.swing.JScrollPane.UPPER_RIGHT_CORNER, new javax.swing.JPanel() {
+            {
+                setBackground(ThemeColor.SURFACE);
+            }
+        });
+
+        // container
+        tableContainer.setBackground(ThemeColor.SURFACE);
+        tableContainer.setRadius(20);
+        tableContainer.setBorder(javax.swing.BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        ((component.RoundedPanel) cardPoin).setRadius(20);
+        ((component.RoundedPanel) cardPoin3).setRadius(20);
+        ((component.RoundedPanel) cardPoin4).setRadius(20);
+        
+        loadData();
+        
+        loadStats();
+
     }
-    
-    private void tampilData() {
 
-        model = new DefaultTableModel();
+    public void loadData() {
+        DefaultTableModel model = (DefaultTableModel) tableKapster.getModel();
+        model.setRowCount(0);
 
-        model.addColumn("ID");
-        model.addColumn("Nama");
-        model.addColumn("No HP");
-        model.addColumn("Spesialisasi");
-        model.addColumn("Komisi");
-        model.addColumn("Status");
+        String keyword = txtSearch.getText().trim();
 
         try {
+            Connection conn = Koneksi.getKoneksi();
 
-            String sql = "SELECT * FROM kapster";
+            String sql = """
+            SELECT
+                k.id,
+                k.nama,
+                k.no_hp,
+                k.spesialisasi,
+                k.komisi_persen,
+                k.status,
+                COUNT(t.id) AS total_tx,
+                COALESCE(SUM(t.total), 0) AS pendapatan
+            FROM kapster k
+            LEFT JOIN transaksi t ON t.id_kapster = k.id
+            WHERE k.nama LIKE ?
+            GROUP BY k.id, k.nama, k.no_hp, k.spesialisasi, k.komisi_persen, k.status
+            ORDER BY k.nama
+        """;
 
             PreparedStatement ps = conn.prepareStatement(sql);
-
+            ps.setString(1, "%" + keyword + "%");
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+                int id = rs.getInt("id");
+                String nama = rs.getString("nama");
+                String noHp = rs.getString("no_hp");
+                String spesialisasi = rs.getString("spesialisasi");
+                int komisi = rs.getInt("komisi_persen");
+                String status = rs.getString("status");
+                int totalTx = rs.getInt("total_tx");
+                long pendapatan = rs.getLong("pendapatan");
+                long komisiKapster = pendapatan * komisi / 100;
+
+                String namaHtml = "<html><div style='text-align:center;'>"
+                        + "<b>" + nama + "</b><br>"
+                        + "<span style='color:gray;'>" + noHp + "</span>"
+                        + "</div></html>";
+
+                String pendapatanFmt = "Rp " + String.format("%,d", pendapatan).replace(',', '.');
+                String komisiKapsterFmt = "Rp " + String.format("%,d", komisiKapster).replace(',', '.');
 
                 model.addRow(new Object[]{
                     rs.getString("id"),
@@ -93,22 +197,60 @@ public class Kapster extends javax.swing.JPanel {
                 });
             }
 
-            tableKapster.setModel(model);
-
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null,
-                    e.getMessage());
+            JOptionPane.showMessageDialog(this, "Gagal memuat data kapster:\n" + e.getMessage());
         }
     }
+    
+    public void loadStats() {
+        try {
+            Connection conn = Koneksi.getKoneksi();
 
-    // CLEAR FORM
-    private void clearForm() {
+            // Total Kapster
+            PreparedStatement ps1 = conn.prepareStatement(
+                    "SELECT COUNT(*) AS total FROM kapster"
+            );
+            ResultSet rs1 = ps1.executeQuery();
+            if (rs1.next()) {
+                jLabel1.setText(String.valueOf(rs1.getInt("total")));
+            }
+            rs1.close();
+            ps1.close();
 
-        namaKaps.setText("");
-        noHP.setText("");
-        spesialisasi.setText("");
-        Komisi.setText("");
-        status.setSelectedIndex(0);
+            // Komisi Kapster Bulan Ini
+            PreparedStatement ps2 = conn.prepareStatement(
+                    "SELECT COALESCE(SUM(t.total * k.komisi_persen / 100), 0) AS komisi_bulan "
+                    + "FROM transaksi t "
+                    + "JOIN kapster k ON t.id_kapster = k.id "
+                    + "WHERE MONTH(t.tanggal) = MONTH(CURDATE()) "
+                    + "AND YEAR(t.tanggal) = YEAR(CURDATE())"
+            );
+            ResultSet rs2 = ps2.executeQuery();
+            if (rs2.next()) {
+                long komisi = rs2.getLong("komisi_bulan");
+                jLabel2.setText("Rp " + String.format("%,d", komisi).replace(',', '.'));
+            }
+            rs2.close();
+            ps2.close();
+
+            // AVG Komisi Kapster
+            PreparedStatement ps3 = conn.prepareStatement(
+                    "SELECT COALESCE("
+                    + "  (SELECT SUM(t.total * k.komisi_persen / 100) FROM transaksi t JOIN kapster k ON t.id_kapster = k.id) "
+                    + "  / (SELECT COUNT(*) FROM kapster), 0) AS avg_komisi"
+            );
+            
+            ResultSet rs3 = ps3.executeQuery();
+            if (rs3.next()) {
+                int avg = rs3.getInt("avg_komisi");
+                jLabel3.setText("Rp " + String.format("%,d", (long) avg).replace(',', '.'));;
+            }
+            rs3.close();
+            ps3.close();
+
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Gagal load stats: " + e.getMessage());
+        }
     }
 
     /**
@@ -120,251 +262,270 @@ public class Kapster extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        btnTambah = new javax.swing.JButton();
-        btnEdit = new javax.swing.JButton();
-        btnHapus = new javax.swing.JButton();
+        btnTambah = new component.ModernButton();
+        tableContainer = new component.RoundedPanel();
+        scrollTable = new javax.swing.JScrollPane();
+        tableKapster = new component.ModernTable();
+        txtSearch = new component.ModernTextField();
+        cardPoin = new RoundedPanel();
+        totalPoin = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        Komisi = new javax.swing.JTextField();
-        namaKaps = new javax.swing.JTextField();
-        noHP = new javax.swing.JTextField();
-        spesialisasi = new javax.swing.JTextField();
-        status = new javax.swing.JComboBox<>();
+        jPanel1 = new javax.swing.JPanel();
+        cardPoin3 = new RoundedPanel();
+        totalPoin1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        cardPoin4 = new RoundedPanel();
+        totalPoin2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        jPanel3 = new javax.swing.JPanel();
 
         setBackground(new java.awt.Color(10, 10, 11));
 
-        btnTambah.setText("Tambah");
+        btnTambah.setText("+ Tambah Kapster");
+        btnTambah.addActionListener(this::btnTambahActionPerformed);
 
-        btnEdit.setText("Edit");
+        tableContainer.setMaximumSize(new java.awt.Dimension(0, 0));
 
-        btnHapus.setText("Hapus");
+        scrollTable.setBorder(null);
+        scrollTable.setToolTipText("");
 
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Data Kapster");
-
-        spesialisasi.addActionListener(this::spesialisasiActionPerformed);
-
-        status.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Aktif", "Tidak Aktif" }));
-
-        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setText("Nama");
-
-        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setText("No.hp");
-
-        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setText("Spesialisasi");
-
-        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel5.setText("Komisi");
-
-        jLabel6.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel6.setText("Status");
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tableKapster.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Nama", "Spesialisasi", "Komisi (%)", "Total TX", "Pendapatan", "Komisi Kapster", "Status", "Aksi"
             }
         ));
-        jScrollPane2.setViewportView(jTable1);
+        scrollTable.setViewportView(tableKapster);
+
+        javax.swing.GroupLayout tableContainerLayout = new javax.swing.GroupLayout(tableContainer);
+        tableContainer.setLayout(tableContainerLayout);
+        tableContainerLayout.setHorizontalGroup(
+            tableContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(scrollTable)
+        );
+        tableContainerLayout.setVerticalGroup(
+            tableContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(scrollTable, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+        );
+
+        txtSearch.setPreferredSize(new java.awt.Dimension(250, 40));
+        txtSearch.addActionListener(this::txtSearchActionPerformed);
+
+        cardPoin.setBackground(new java.awt.Color(22, 22, 26));
+
+        totalPoin.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
+        totalPoin.setForeground(new java.awt.Color(136, 136, 152));
+        totalPoin.setText("Total Kapster");
+
+        jLabel1.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(201, 168, 76));
+        jLabel1.setText("jLabel1");
+
+        jPanel1.setBackground(new java.awt.Color(201, 168, 76));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 10, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout cardPoinLayout = new javax.swing.GroupLayout(cardPoin);
+        cardPoin.setLayout(cardPoinLayout);
+        cardPoinLayout.setHorizontalGroup(
+            cardPoinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(cardPoinLayout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(cardPoinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(totalPoin, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(198, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        cardPoinLayout.setVerticalGroup(
+            cardPoinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, cardPoinLayout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(totalPoin)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1)
+                .addGap(27, 27, 27))
+        );
+
+        cardPoin3.setBackground(new java.awt.Color(22, 22, 26));
+            String sql = "UPDATE kapster SET nama=?, no_hp=?, spesialisasi=?, komisi_persen=?, status=? WHERE id=?";
+
+        totalPoin1.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
+        totalPoin1.setForeground(new java.awt.Color(136, 136, 152));
+        totalPoin1.setText("Komisi Kapster Bulan Ini");
+
+        jLabel2.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(240, 239, 232));
+        jLabel2.setText("jLabel2");
+
+        jPanel2.setBackground(new java.awt.Color(85, 153, 221));
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 10, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout cardPoin3Layout = new javax.swing.GroupLayout(cardPoin3);
+        cardPoin3.setLayout(cardPoin3Layout);
+        cardPoin3Layout.setHorizontalGroup(
+            cardPoin3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(cardPoin3Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(cardPoin3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalPoin1, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(109, Short.MAX_VALUE))
+            .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        cardPoin3Layout.setVerticalGroup(
+            cardPoin3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, cardPoin3Layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
+                .addComponent(totalPoin1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addGap(27, 27, 27))
+        );
+
+        cardPoin4.setBackground(new java.awt.Color(22, 22, 26));
+
+        totalPoin2.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
+        totalPoin2.setForeground(new java.awt.Color(136, 136, 152));
+        totalPoin2.setText("AVG Komisi Kapster");
+
+        jLabel3.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(240, 239, 232));
+        jLabel3.setText("jLabel3");
+
+        jPanel3.setBackground(new java.awt.Color(76, 175, 130));
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 10, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout cardPoin4Layout = new javax.swing.GroupLayout(cardPoin4);
+        cardPoin4.setLayout(cardPoin4Layout);
+        cardPoin4Layout.setHorizontalGroup(
+            cardPoin4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(cardPoin4Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(cardPoin4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalPoin2, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(125, Short.MAX_VALUE))
+            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        cardPoin4Layout.setVerticalGroup(
+            cardPoin4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, cardPoin4Layout.createSequentialGroup()
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(totalPoin2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addGap(27, 27, 27))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnTambah)
-                                .addGap(87, 87, 87)
-                                .addComponent(btnEdit)
-                                .addGap(75, 75, 75)
-                                .addComponent(btnHapus))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(42, 42, 42)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel6))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(noHP)
-                            .addComponent(Komisi)
-                            .addComponent(namaKaps)
-                            .addComponent(spesialisasi)
-                            .addComponent(status, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(67, 67, 67))
+                .addGap(40, 40, 40)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tableContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cardPoin, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(cardPoin3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(cardPoin4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(0, 0, 0))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnTambah, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(jLabel1)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(namaKaps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addGap(14, 14, 14)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(noHP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(spesialisasi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4))
-                        .addGap(14, 14, 14)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Komisi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(status, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6))))
+                .addGap(40, 40, 40)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(cardPoin, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cardPoin3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cardPoin4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnTambah)
-                    .addComponent(btnEdit)
-                    .addComponent(btnHapus))
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnTambah, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(tableContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void spesialisasiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spesialisasiActionPerformed
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_spesialisasiActionPerformed
+        loadData();
+    }//GEN-LAST:event_txtSearchActionPerformed
 
+    private void btnTambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambahActionPerformed
+        // TODO add your handling code here:       
+        java.awt.Frame parent
+                = (java.awt.Frame) javax.swing.SwingUtilities.getWindowAncestor(this);
 
+        TambahKapsterDialog dialog = new TambahKapsterDialog(parent, true);
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+
+        loadData();
+    }//GEN-LAST:event_btnTambahActionPerformed
+
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField Komisi;
-    private javax.swing.JButton btnEdit;
-    private javax.swing.JButton btnHapus;
-    private javax.swing.JButton btnTambah;
+    private component.ModernButton btnTambah;
+    private javax.swing.JPanel cardPoin;
+    private javax.swing.JPanel cardPoin3;
+    private javax.swing.JPanel cardPoin4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField namaKaps;
-    private javax.swing.JTextField noHP;
-    private javax.swing.JTextField spesialisasi;
-    private javax.swing.JComboBox<String> status;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane scrollTable;
+    private component.RoundedPanel tableContainer;
+    private component.ModernTable tableKapster;
+    private javax.swing.JLabel totalPoin;
+    private javax.swing.JLabel totalPoin1;
+    private javax.swing.JLabel totalPoin2;
+    private component.ModernTextField txtSearch;
     // End of variables declaration//GEN-END:variables
-
-// TAMBAH
-    private void btnTambahActionPerformed(java.awt.event.ActionEvent evt) {
-
-        try {
-
-            String sql = "INSERT INTO kapster VALUES (NULL,?,?,?,?,?)";
-
-            PreparedStatement ps = conn.prepareStatement(sql);
-
-            ps.setString(1, namaKaps.getText());
-            ps.setString(2, noHP.getText());
-            ps.setString(3, spesialisasi.getText());
-            ps.setString(4, Komisi.getText());
-            ps.setString(5, status.getSelectedItem().toString());
-
-            ps.executeUpdate();
-
-            JOptionPane.showMessageDialog(null,
-                    "Data Berhasil Ditambahkan");
-
-            tampilData();
-            clearForm();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null,
-                    e.getMessage());
-        }
-    }
-
-    // EDIT
-    private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {
-
-        int row = tableKapster.getSelectedRow();
-
-        String id = tableKapster.getValueAt(row, 0).toString();
-
-        try {
-
-            String sql = "UPDATE kapster SET nama=?, no_hp=?, spesialisasi=?, komisi_persen=?, status=? WHERE id=?";
-
-            PreparedStatement ps = conn.prepareStatement(sql);
-
-            ps.setString(1, namaKaps.getText());
-            ps.setString(2, noHP.getText());
-            ps.setString(3, spesialisasi.getText());
-            ps.setString(4, Komisi.getText());
-            ps.setString(5, status.getSelectedItem().toString());
-            ps.setString(6, id);
-
-            ps.executeUpdate();
-
-            JOptionPane.showMessageDialog(null,
-                    "Data Berhasil Diubah");
-
-            tampilData();
-            clearForm();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null,
-                    e.getMessage());
-        }
-    }
-
-    // HAPUS
-    private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {
-
-        int row = tableKapster.getSelectedRow();
-
-        String id = tableKapster.getValueAt(row, 0).toString();
-
-        try {
-
-            String sql = "DELETE FROM kapster WHERE id_kapster=?";
-
-            PreparedStatement ps = conn.prepareStatement(sql);
-
-            ps.setString(1, id);
-
-            ps.executeUpdate();
-
-            JOptionPane.showMessageDialog(null,
-                    "Data Berhasil Dihapus");
-
-            tampilData();
-            clearForm();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null,
-                    e.getMessage());
-        }
-    }
 }

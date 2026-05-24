@@ -303,6 +303,7 @@ public class Pelanggan extends javax.swing.JPanel {
         txtSearch.setPreferredSize(new java.awt.Dimension(250, 40));
         txtSearch.addActionListener(this::txtSearchActionPerformed);
 
+        cbTier.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
         cbTier.setForeground(new java.awt.Color(255, 255, 255));
         cbTier.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Semua Tier", "Bronze", "Silver", "Gold" }));
         cbTier.setPreferredSize(new java.awt.Dimension(140, 40));

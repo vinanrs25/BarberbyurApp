@@ -10,18 +10,20 @@ import component.ThemeColor;
  *
  * @author rhmnsae
  */
-public class HapusItemDialog extends javax.swing.JDialog {
+public class HapusKapsterDialog extends javax.swing.JDialog {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HapusItemDialog.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HapusKapsterDialog.class.getName());
 
     /**
      * Creates new form TambahPelangganDialog
      */
-    private int idItem;
-
-    public HapusItemDialog(java.awt.Frame parent, boolean modal, int idItem) {
+    private int idKapster;
+    
+    
+    public HapusKapsterDialog(java.awt.Frame parent, boolean modal, int idKapster) {
         super(parent, modal);
-        this.idItem = idItem;
+        this.idKapster = idKapster;
+        
         initComponents();
         mainPanel.setRadius(20);
         mainPanel.setBackground(ThemeColor.BACKGROUND);
@@ -47,14 +49,14 @@ public class HapusItemDialog extends javax.swing.JDialog {
         btnBatal = new component.ModernButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Hapus Item");
+        setTitle("Hapus Kapster");
         setResizable(false);
 
         labelJudul.setFont(new java.awt.Font("SansSerif", 1, 28)); // NOI18N
-        labelJudul.setText("Hapus Item");
+        labelJudul.setText("Hapus Kapster");
 
         labelDeskripsi.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
-        labelDeskripsi.setText("Data Item yang dihapus tidak dapat dikembalikan kembali.");
+        labelDeskripsi.setText("Data Kapster yang dihapus tidak dapat dikembalikan kembali.");
 
         btnHapus.setText("Hapus");
         btnHapus.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -78,26 +80,26 @@ public class HapusItemDialog extends javax.swing.JDialog {
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                        .addComponent(labelJudul)
-                        .addGap(170, 170, 170))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                        .addComponent(btnBatal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(30, 30, 30)
-                        .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(162, 162, 162))))
+                .addComponent(btnBatal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
+                .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(162, 162, 162))
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGap(50, 50, 50)
-                .addComponent(labelDeskripsi)
-                .addGap(0, 50, Short.MAX_VALUE))
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(143, 143, 143)
+                        .addComponent(labelJudul))
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(38, 38, 38)
+                        .addComponent(labelDeskripsi)))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGap(40, 40, 40)
+                .addGap(39, 39, 39)
                 .addComponent(labelJudul)
-                .addGap(37, 37, 37)
+                .addGap(38, 38, 38)
                 .addComponent(labelDeskripsi)
                 .addGap(28, 28, 28)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -128,14 +130,14 @@ public class HapusItemDialog extends javax.swing.JDialog {
         try {
             java.sql.Connection conn = form.Koneksi.getKoneksi();
             java.sql.PreparedStatement ps = conn.prepareStatement(
-                    "DELETE FROM item WHERE id = ?" 
+                    "DELETE FROM kapster WHERE id = ?" 
             );
-            ps.setInt(1, idItem);
+            ps.setInt(1, idKapster);
             ps.executeUpdate();
 
             javax.swing.JOptionPane.showMessageDialog(
                     this,
-                    "Item berhasil dihapus!", 
+                    "Kapster berhasil dihapus!", 
                     "Sukses",
                     javax.swing.JOptionPane.INFORMATION_MESSAGE
             );
