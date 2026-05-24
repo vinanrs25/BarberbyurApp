@@ -190,7 +190,7 @@ public class Kasir extends javax.swing.JPanel {
         panelGridItem.removeAll(); 
 
         try {
-            java.sql.Connection conn = koneksi.getKoneksi();
+            java.sql.Connection conn = Koneksi.getKoneksi();
             
             // Buat query dinamis
             String sql = "SELECT * FROM item WHERE nama LIKE ?";
@@ -390,7 +390,7 @@ public class Kasir extends javax.swing.JPanel {
         PilihKapster.addItem("-- Pilih Kapster --");
         
         try {
-            java.sql.Connection conn = koneksi.getKoneksi();
+            java.sql.Connection conn = Koneksi.getKoneksi();
             java.sql.Statement st = conn.createStatement();
             
             // Mengambil nama kapster yang statusnya aktif berdasarkan database SQL kamu

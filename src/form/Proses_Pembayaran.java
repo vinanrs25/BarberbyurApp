@@ -162,7 +162,7 @@ public class Proses_Pembayaran extends javax.swing.JFrame {
         String noUrut = "001"; // Default jika belum ada transaksi hari ini
         
         try {
-            java.sql.Connection conn = koneksi.getKoneksi(); // Sesuaikan dengan class koneksimu
+            java.sql.Connection conn = Koneksi.getKoneksi(); // Sesuaikan dengan class koneksimu
             // Hitung jumlah transaksi pada hari ini
             String sql = "SELECT COUNT(*) AS total FROM transaksi WHERE DATE(tanggal) = CURDATE()";
             java.sql.Statement st = conn.createStatement();
@@ -557,7 +557,7 @@ public class Proses_Pembayaran extends javax.swing.JFrame {
     private void btnKonfirmasiPembayaranActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnKonfirmasiPembayaranActionPerformed
         // TODO add your handling code here:
         try {
-            Connection conn = koneksi.getKoneksi();
+            Connection conn = Koneksi.getKoneksi();
             conn.setAutoCommit(false);
             
             // Ambil ID & Komisi Kapster

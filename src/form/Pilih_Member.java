@@ -80,7 +80,7 @@ public class Pilih_Member extends javax.swing.JFrame {
         jPanelMember.removeAll();
 
         try {
-            java.sql.Connection conn = koneksi.getKoneksi();
+            java.sql.Connection conn = Koneksi.getKoneksi();
             
             String sql = "SELECT p.id, p.nama, p.telepon, p.poin, "
                        + "(SELECT COUNT(*) FROM transaksi t WHERE t.id_pelanggan = p.id) AS kunjungan "
