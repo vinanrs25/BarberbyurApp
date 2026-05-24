@@ -10,10 +10,10 @@ package model;
  */
 // Class untuk Item yang masuk Keranjang
 public class CartItemModel {
-    public Produk produk;
+    public Item produk;
     public int qty;
 
-    public CartItemModel(Produk produk, int qty) {
+    public CartItemModel(Item produk, int qty) {
         this.produk = produk;
         this.qty = qty;
     }

@@ -82,10 +82,10 @@ public class Pilih_Member extends javax.swing.JFrame {
         try {
             java.sql.Connection conn = Koneksi.getKoneksi();
             
-            String sql = "SELECT p.id, p.nama, p.telepon, p.poin, "
+            String sql = "SELECT p.id, p.nama, p.no_hp AS telepon, p.point AS poin, "
                        + "(SELECT COUNT(*) FROM transaksi t WHERE t.id_pelanggan = p.id) AS kunjungan "
                        + "FROM pelanggan p "
-                       + "WHERE p.nama LIKE ? OR p.telepon LIKE ?";
+                       + "WHERE p.nama LIKE ? OR p.no_hp LIKE ?";
                        
             java.sql.PreparedStatement pst = conn.prepareStatement(sql);
             pst.setString(1, "%" + keyword + "%");

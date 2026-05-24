@@ -9,20 +9,22 @@ package model;
  * @author asus_
  */
 // Class untuk Item dari Database
-public class Produk {
+public class Item {
     public int id;
     public String nama;
     public int harga;
     public String tipe;
     public String deskripsi;
-    public String durasiStok;
+    public int durasi;
+    public int stok;
 
-    public Produk(int id, String nama, int harga, String tipe, String deskripsi, String durasiStok) {
+    public Item(int id, String nama, int harga, String tipe, String deskripsi, int durasi, int stok) {
         this.id = id;
         this.nama = nama;
         this.harga = harga;
         this.tipe = tipe;
         this.deskripsi = deskripsi;
-        this.durasiStok = durasiStok;
+        this.durasi = durasi;
+        this.stok = stok;
     }
 }
