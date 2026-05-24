@@ -16,10 +16,14 @@ public class ActionTransaksiRenderer implements TableCellRenderer {
             JTable table, Object value, boolean isSelected,
             boolean hasFocus, int row, int column
     ) {
-        ActionTransaksiPanel panel = new ActionTransaksiPanel();
-        panel.setBorder(javax.swing.BorderFactory.createMatteBorder(
-            0, 0, 1, 0, component.ThemeColor.BORDER
+        JPanel wrapper = new JPanel(new java.awt.GridBagLayout());
+        wrapper.setBackground(component.ThemeColor.SURFACE);
+        wrapper.setBorder(javax.swing.BorderFactory.createMatteBorder(
+                0, 0, 1, 0, component.ThemeColor.BORDER
         ));
-        return panel;
+        ActionTransaksiPanel panel = new ActionTransaksiPanel();
+        panel.setOpaque(false);
+        wrapper.add(panel, new java.awt.GridBagConstraints());
+        return wrapper;
     }
 }
