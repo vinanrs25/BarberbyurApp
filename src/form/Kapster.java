@@ -24,8 +24,21 @@ public class Kapster extends javax.swing.JPanel {
      * Creates new form Kapster
      */
     
+    private javax.swing.Timer autoRefresh;
+    
     public Kapster() {
         initComponents();
+        Connection conn = Koneksi.getKoneksi();
+        
+//        PreparedStatement ps3 = conn.prepareStatement(
+//            "SELECT COUNT(*) as total FROM kapster"
+//        );
+//        ResultSet rs3 = ps3.executeQuery();
+//        if (rs3.next()) {
+//            totalKaps.setText(String.valueOf(rs3.getInt("totalKaps")));
+//        }
+//        rs3.close();
+//        ps3.close();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 40, 40));
 
@@ -135,11 +148,17 @@ public class Kapster extends javax.swing.JPanel {
         loadData();
         
         loadStats();
+        
+        new javax.swing.Timer(2000, e -> refreshDashboard()).start();
 
+    }
+    
+    public void refreshDashboard() {
+        loadData();
     }
 
     public void loadData() {
-        DefaultTableModel model = (DefaultTableModel) tableKapster.getModel();
+            DefaultTableModel model = (DefaultTableModel) tableKapster.getModel();
         model.setRowCount(0);
 
         String keyword = txtSearch.getText().trim();
@@ -148,24 +167,28 @@ public class Kapster extends javax.swing.JPanel {
             Connection conn = Koneksi.getKoneksi();
 
             String sql = """
-            SELECT
-                k.id,
-                k.nama,
-                k.no_hp,
-                k.spesialisasi,
-                k.komisi_persen,
-                k.status,
-                COUNT(t.id) AS total_tx,
-                COALESCE(SUM(t.total), 0) AS pendapatan
-            FROM kapster k
-            LEFT JOIN transaksi t ON t.id_kapster = k.id
-            WHERE k.nama LIKE ?
-            GROUP BY k.id, k.nama, k.no_hp, k.spesialisasi, k.komisi_persen, k.status
-            ORDER BY k.nama
-        """;
+                SELECT 
+                    k.id,
+                    k.nama,
+                    k.no_hp,
+                    k.spesialisasi,
+                    k.komisi_persen,
+                    k.status,
+
+                    COUNT(t.id) AS total_tx,
+                    COALESCE(SUM(t.total), 0) AS pendapatan,
+                    COALESCE(SUM(t.komisi), 0) AS komisi_kapster
+
+                FROM kapster k
+                LEFT JOIN transaksi t ON k.id = t.id_kapster
+
+                GROUP BY 
+                    k.id, k.nama,k.no_hp, k.spesialisasi, k.komisi_persen, k.status
+
+                ORDER BY k.id ASC
+            """;
 
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, "%" + keyword + "%");
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -188,14 +211,20 @@ public class Kapster extends javax.swing.JPanel {
                 String komisiKapsterFmt = "Rp " + String.format("%,d", komisiKapster).replace(',', '.');
 
                 model.addRow(new Object[]{
-                    rs.getString("id"),
-                    rs.getString("nama"),
-                    rs.getString("no_hp"),
-                    rs.getString("spesialisasi"),
-                    rs.getString("komisi_persen"),
-                    rs.getString("status")
+                    id,                 // kolom 0 ID
+                    namaHtml,           // kolom 1 Nama + no hp
+                    spesialisasi,       // kolom 2
+                    komisi + "%(" + komisiKapsterFmt + ")",       // kolom 3
+                    totalTx,            // kolom 4
+                    pendapatanFmt,      // kolom 5
+                    komisiKapsterFmt,   // kolom 6
+                    status,             // kolom 7
+                    "Aksi"              // kolom 8
                 });
             }
+
+            rs.close();
+            ps.close();
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat data kapster:\n" + e.getMessage());
@@ -206,50 +235,60 @@ public class Kapster extends javax.swing.JPanel {
         try {
             Connection conn = Koneksi.getKoneksi();
 
-            // Total Kapster
-            PreparedStatement ps1 = conn.prepareStatement(
-                    "SELECT COUNT(*) AS total FROM kapster"
-            );
+            // 1. Total Kapster
+            String sql1 = "SELECT COUNT(*) AS total FROM kapster";
+            PreparedStatement ps1 = conn.prepareStatement(sql1);
             ResultSet rs1 = ps1.executeQuery();
+
             if (rs1.next()) {
-                jLabel1.setText(String.valueOf(rs1.getInt("total")));
+                totalKaps.setText(String.valueOf(rs1.getInt("total")));
             }
+
             rs1.close();
             ps1.close();
 
-            // Komisi Kapster Bulan Ini
-            PreparedStatement ps2 = conn.prepareStatement(
-                    "SELECT COALESCE(SUM(t.total * k.komisi_persen / 100), 0) AS komisi_bulan "
-                    + "FROM transaksi t "
-                    + "JOIN kapster k ON t.id_kapster = k.id "
-                    + "WHERE MONTH(t.tanggal) = MONTH(CURDATE()) "
-                    + "AND YEAR(t.tanggal) = YEAR(CURDATE())"
-            );
+            // 2. Total Komisi Semua Kapster
+            String sql2 = """
+                SELECT COALESCE(SUM(t.total * k.komisi_persen / 100), 0) AS total_komisi
+                FROM transaksi t
+                JOIN kapster k ON t.id_kapster = k.id
+            """;
+
+            PreparedStatement ps2 = conn.prepareStatement(sql2);
             ResultSet rs2 = ps2.executeQuery();
+
             if (rs2.next()) {
-                long komisi = rs2.getLong("komisi_bulan");
-                jLabel2.setText("Rp " + String.format("%,d", komisi).replace(',', '.'));
+                long totalKomisi = rs2.getLong("total_komisi");
+                komisiKaps.setText("Rp " + String.format("%,d", totalKomisi).replace(',', '.'));
             }
+
             rs2.close();
             ps2.close();
 
-            // AVG Komisi Kapster
-            PreparedStatement ps3 = conn.prepareStatement(
-                    "SELECT COALESCE("
-                    + "  (SELECT SUM(t.total * k.komisi_persen / 100) FROM transaksi t JOIN kapster k ON t.id_kapster = k.id) "
-                    + "  / (SELECT COUNT(*) FROM kapster), 0) AS avg_komisi"
-            );
-            
+            // 3. Rata-rata Komisi per Kapster
+            String sql3 = """
+                SELECT COALESCE(AVG(komisi_per_kapster), 0) AS avg_komisi
+                FROM (
+                    SELECT COALESCE(SUM(t.total * k.komisi_persen / 100), 0) AS komisi_per_kapster
+                    FROM kapster k
+                    LEFT JOIN transaksi t ON t.id_kapster = k.id
+                    GROUP BY k.id
+                ) x
+            """;
+
+            PreparedStatement ps3 = conn.prepareStatement(sql3);
             ResultSet rs3 = ps3.executeQuery();
+
             if (rs3.next()) {
-                int avg = rs3.getInt("avg_komisi");
-                jLabel3.setText("Rp " + String.format("%,d", (long) avg).replace(',', '.'));;
+                long avgKomisi = rs3.getLong("avg_komisi");
+                jLabel3.setText("Rp " + String.format("%,d", avgKomisi).replace(',', '.'));
             }
+
             rs3.close();
             ps3.close();
 
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Gagal load stats: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Gagal load stats: " + e.getMessage());
         }
     }
 
@@ -269,11 +308,11 @@ public class Kapster extends javax.swing.JPanel {
         txtSearch = new component.ModernTextField();
         cardPoin = new RoundedPanel();
         totalPoin = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        totalKaps = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         cardPoin3 = new RoundedPanel();
         totalPoin1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        komisiKaps = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         cardPoin4 = new RoundedPanel();
         totalPoin2 = new javax.swing.JLabel();
@@ -320,9 +359,9 @@ public class Kapster extends javax.swing.JPanel {
         totalPoin.setForeground(new java.awt.Color(136, 136, 152));
         totalPoin.setText("Total Kapster");
 
-        jLabel1.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(201, 168, 76));
-        jLabel1.setText("jLabel1");
+        totalKaps.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
+        totalKaps.setForeground(new java.awt.Color(201, 168, 76));
+        totalKaps.setText("jLabel1");
 
         jPanel1.setBackground(new java.awt.Color(201, 168, 76));
 
@@ -345,7 +384,7 @@ public class Kapster extends javax.swing.JPanel {
                 .addGap(26, 26, 26)
                 .addGroup(cardPoinLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(totalPoin, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(totalKaps, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(198, Short.MAX_VALUE))
             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -356,20 +395,19 @@ public class Kapster extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(totalPoin)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
+                .addComponent(totalKaps)
                 .addGap(27, 27, 27))
         );
 
         cardPoin3.setBackground(new java.awt.Color(22, 22, 26));
-            String sql = "UPDATE kapster SET nama=?, no_hp=?, spesialisasi=?, komisi_persen=?, status=? WHERE id=?";
 
         totalPoin1.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         totalPoin1.setForeground(new java.awt.Color(136, 136, 152));
         totalPoin1.setText("Komisi Kapster Bulan Ini");
 
-        jLabel2.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(240, 239, 232));
-        jLabel2.setText("jLabel2");
+        komisiKaps.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
+        komisiKaps.setForeground(new java.awt.Color(240, 239, 232));
+        komisiKaps.setText("jLabel2");
 
         jPanel2.setBackground(new java.awt.Color(85, 153, 221));
 
@@ -391,7 +429,7 @@ public class Kapster extends javax.swing.JPanel {
             .addGroup(cardPoin3Layout.createSequentialGroup()
                 .addGap(26, 26, 26)
                 .addGroup(cardPoin3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(komisiKaps, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(totalPoin1, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(109, Short.MAX_VALUE))
             .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -403,7 +441,7 @@ public class Kapster extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
                 .addComponent(totalPoin1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
+                .addComponent(komisiKaps)
                 .addGap(27, 27, 27))
         );
 
@@ -466,8 +504,7 @@ public class Kapster extends javax.swing.JPanel {
                         .addGap(18, 18, 18)
                         .addComponent(cardPoin3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
-                        .addComponent(cardPoin4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(0, 0, 0))
+                        .addComponent(cardPoin4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
@@ -514,15 +551,15 @@ public class Kapster extends javax.swing.JPanel {
     private javax.swing.JPanel cardPoin;
     private javax.swing.JPanel cardPoin3;
     private javax.swing.JPanel cardPoin4;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JLabel komisiKaps;
     private javax.swing.JScrollPane scrollTable;
     private component.RoundedPanel tableContainer;
     private component.ModernTable tableKapster;
+    private javax.swing.JLabel totalKaps;
     private javax.swing.JLabel totalPoin;
     private javax.swing.JLabel totalPoin1;
     private javax.swing.JLabel totalPoin2;

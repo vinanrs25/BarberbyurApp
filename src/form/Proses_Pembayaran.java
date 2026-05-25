@@ -565,14 +565,19 @@ public class Proses_Pembayaran extends javax.swing.JFrame {
             int persenKomisi = 0;
             if (!namaKapster.equals("Tanpa Kapster")) {
                 
-                PreparedStatement psK = conn.prepareStatement("SELECT id, komisi_persen FROM kapster WHERE nama = ?");
+                PreparedStatement psK = conn.prepareStatement(
+                    "SELECT id, komisi FROM kapster WHERE nama = ?"
+                );
                 psK.setString(1, namaKapster);
                 ResultSet rsK = psK.executeQuery();
+
                 if (rsK.next()) {
                     idKapsterDB = rsK.getInt("id");
-                    
-                    persenKomisi = rsK.getInt("komisi_persen");
+                    persenKomisi = rsK.getInt("komisi");
                 }
+
+                rsK.close();
+                psK.close();
             }
             
             // Hitung komisi kapster (Misal: Persentase komisi dari Total Bayar)
@@ -637,7 +642,6 @@ public class Proses_Pembayaran extends javax.swing.JFrame {
             
             // Update pesan sukses agar menampilkan nomor yang benar
             JOptionPane.showMessageDialog(this, "Transaksi Berhasil!\nNomor Nota: " + this.noNota);
-            
             formKasirAsal.kosongkanKeranjang();
             
             this.dispose();

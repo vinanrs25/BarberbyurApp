@@ -33,6 +33,9 @@ public class Dashboard extends javax.swing.JPanel {
     /**
      * Creates new form Dashboard
      */
+    
+    private javax.swing.Timer autoRefresh;
+    
     public Dashboard() {
         initComponents();
         cardCapster.setBackground(ThemeColor.SURFACE);
@@ -105,7 +108,13 @@ public class Dashboard extends javax.swing.JPanel {
         }
 
         loadDashboard();
+        autoRefresh = new javax.swing.Timer(2000, e -> refreshDashboard());
+        autoRefresh.start();
     
+    }
+    
+    public void refreshDashboard() {
+        loadDashboard();
     }
     
     private JPanel createKapsterItem(
