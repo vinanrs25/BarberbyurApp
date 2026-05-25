@@ -158,78 +158,89 @@ public class Kapster extends javax.swing.JPanel {
     }
 
     public void loadData() {
-            DefaultTableModel model = (DefaultTableModel) tableKapster.getModel();
-        model.setRowCount(0);
+     DefaultTableModel model = (DefaultTableModel) tableKapster.getModel();
+     model.setRowCount(0);
 
-        String keyword = txtSearch.getText().trim();
+     String keyword = txtSearch.getText().trim();
 
-        try {
-            Connection conn = Koneksi.getKoneksi();
+     try {
+         Connection conn = Koneksi.getKoneksi();
 
-            String sql = """
-                SELECT 
-                    k.id,
-                    k.nama,
-                    k.no_hp,
-                    k.spesialisasi,
-                    k.komisi_persen,
-                    k.status,
+         String sql = """
+             SELECT 
+                 k.id,
+                 k.nama,
+                 k.no_hp,
+                 k.spesialisasi,
+                 k.komisi_persen,
+                 k.status,
+                 COUNT(t.id) AS total_tx,
+                 COALESCE(SUM(t.total), 0) AS pendapatan,
+                 COALESCE(SUM(t.komisi), 0) AS komisi_kapster
+             FROM kapster k
+             LEFT JOIN transaksi t ON k.id = t.id_kapster
+             WHERE 1=1
+         """;
 
-                    COUNT(t.id) AS total_tx,
-                    COALESCE(SUM(t.total), 0) AS pendapatan,
-                    COALESCE(SUM(t.komisi), 0) AS komisi_kapster
+         // tambahkan filter keyword jika ada
+         if (!keyword.isEmpty()) {
+             sql += " AND (k.nama LIKE ? OR k.spesialisasi LIKE ?)";
+         }
 
-                FROM kapster k
-                LEFT JOIN transaksi t ON k.id = t.id_kapster
+         sql += """
+             GROUP BY k.id, k.nama, k.no_hp, k.spesialisasi, k.komisi_persen, k.status
+             ORDER BY k.id ASC
+         """;
 
-                GROUP BY 
-                    k.id, k.nama,k.no_hp, k.spesialisasi, k.komisi_persen, k.status
+         PreparedStatement ps = conn.prepareStatement(sql);
 
-                ORDER BY k.id ASC
-            """;
+         // set parameter jika ada keyword
+         if (!keyword.isEmpty()) {
+             ps.setString(1, "%" + keyword + "%");
+             ps.setString(2, "%" + keyword + "%");
+         }
 
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+         ResultSet rs = ps.executeQuery();
 
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String nama = rs.getString("nama");
-                String noHp = rs.getString("no_hp");
-                String spesialisasi = rs.getString("spesialisasi");
-                int komisi = rs.getInt("komisi_persen");
-                String status = rs.getString("status");
-                int totalTx = rs.getInt("total_tx");
-                long pendapatan = rs.getLong("pendapatan");
-                long komisiKapster = pendapatan * komisi / 100;
+         while (rs.next()) {
+             int id = rs.getInt("id");
+             String nama = rs.getString("nama");
+             String noHp = rs.getString("no_hp");
+             String spesialisasi = rs.getString("spesialisasi");
+             int komisi = rs.getInt("komisi_persen");
+             String status = rs.getString("status");
+             int totalTx = rs.getInt("total_tx");
+             long pendapatan = rs.getLong("pendapatan");
+             long komisiKapster = pendapatan * komisi / 100;
 
-                String namaHtml = "<html><div style='text-align:center;'>"
-                        + "<b>" + nama + "</b><br>"
-                        + "<span style='color:gray;'>" + noHp + "</span>"
-                        + "</div></html>";
+             String namaHtml = "<html><div style='text-align:center;'>"
+                     + "<b>" + nama + "</b><br>"
+                     + "<span style='color:gray;'>" + noHp + "</span>"
+                     + "</div></html>";
 
-                String pendapatanFmt = "Rp " + String.format("%,d", pendapatan).replace(',', '.');
-                String komisiKapsterFmt = "Rp " + String.format("%,d", komisiKapster).replace(',', '.');
+             String pendapatanFmt = "Rp " + String.format("%,d", pendapatan).replace(',', '.');
+             String komisiKapsterFmt = "Rp " + String.format("%,d", komisiKapster).replace(',', '.');
 
-                model.addRow(new Object[]{
-                    id,                 // kolom 0 ID
-                    namaHtml,           // kolom 1 Nama + no hp
-                    spesialisasi,       // kolom 2
-                    komisi + "%(" + komisiKapsterFmt + ")",       // kolom 3
-                    totalTx,            // kolom 4
-                    pendapatanFmt,      // kolom 5
-                    komisiKapsterFmt,   // kolom 6
-                    status,             // kolom 7
-                    "Aksi"              // kolom 8
-                });
-            }
+             model.addRow(new Object[]{
+                 id,
+                 namaHtml,
+                 spesialisasi,
+                 komisi + "%(" + komisiKapsterFmt + ")",
+                 totalTx,
+                 pendapatanFmt,
+                 komisiKapsterFmt,
+                 status,
+                 "Aksi"
+             });
+         }
 
-            rs.close();
-            ps.close();
+         rs.close();
+         ps.close();
 
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Gagal memuat data kapster:\n" + e.getMessage());
-        }
-    }
+     } catch (Exception e) {
+         JOptionPane.showMessageDialog(this, "Gagal memuat data kapster:\n" + e.getMessage());
+     }
+ }
 
     public void loadStats() {
         try {
